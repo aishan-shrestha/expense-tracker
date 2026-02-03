@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="en" class="h-full dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Expense Tracker</title>
+    <link rel="manifest" href="manifest.json" />
+    <meta name="theme-color" content="#111827" />
+    <link rel="apple-touch-icon" href="icon-192.png" />
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = { darkMode: "class" };
+    </script>
+  </head>
+
+  <body
+    class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-full p-4"
+  >
+    <div class="max-w-7xl mx-auto space-y-6">
+      <!-- HEADER -->
+      <div class="flex justify-between items-center">
+        <h1 class="text-3xl font-bold">💰 Expense Tracker</h1>
+        <button
+          onclick="toggleDark()"
+          id="themeBtn"
+          class="px-3 py-1 rounded bg-yellow-400 text-black"
+        >
+          ☀️ Light
+        </button>
+      </div>
+
+      <!-- MONTH & YEAR TOTAL -->
+      <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow space-y-1">
+        <div id="monthTotal" class="text-xl font-bold">Month Total: Rs 0</div>
+        <div id="yearTotal" class="text-md text-gray-600 dark:text-gray-300">
+          Year Total: Rs 0
+        </div>
+      </div>
+
+      <!-- CATEGORY TABS -->
+      <div class="flex space-x-2 overflow-x-auto border-b pb-1">
+        <button
+          class="tab-btn px-4 py-2 bg-blue-600 text-white rounded-t"
+          data-cat="Food"
+        ></button>
+        <button
+          class="tab-btn px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded-t"
+          data-cat="Transport"
+        ></button>
+        <button
+          class="tab-btn px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded-t"
+          data-cat="Shopping"
+        ></button>
+        <button
+          class="tab-btn px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded-t"
+          data-cat="Rent"
+        ></button>
+        <button
+          class="tab-btn px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded-t"
+          data-cat="Entertainment"
+        ></button>
+        <button
+          class="tab-btn px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded-t"
+          data-cat="Other"
+        ></button>
+      </div>
+
+      <!-- FILTER -->
+      <div>
+        <label class="font-medium">
+          Filter by Month:
+          <input
+            type="month"
+            id="monthFilter"
+            class="p-2 rounded border dark:bg-gray-800 ml-2"
+          />
+        </label>
+      </div>
+
+      <!-- ADD / EDIT EXPENSE -->
+      <div
+        id="expenseFormBox"
+        class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow"
+      >
+        <form id="expenseForm" class="grid grid-cols-1 md:grid-cols-4 gap-3">
+          <input
+            type="date"
+            id="date"
+            required
+            class="p-2 rounded border dark:bg-gray-700"
+          />
+          <input
+            type="number"
+            id="amount"
+            placeholder="Amount (Rs)"
+            required
+            class="p-2 rounded border dark:bg-gray-700"
+          />
+          <input
+            type="text"
+            id="remark"
+            placeholder="Remark"
+            class="p-2 rounded border dark:bg-gray-700"
+          />
+          <button class="bg-blue-600 text-white rounded p-2">Save</button>
+        </form>
+      </div>
+
+      <!-- CATEGORY TOTAL -->
+      <div id="categoryTotal" class="text-lg font-semibold">
+        Category Total: Rs 0
+      </div>
+
+      <!-- TABLE -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="border-b">
+            <tr>
+              <th class="p-2 text-left">Date</th>
+              <th class="p-2 text-left">Amount (Rs)</th>
+              <th class="p-2 text-left">Remark</th>
+              <th class="p-2 text-left">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="expenseTable"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <script>
+      let expenses = JSON.parse(localStorage.getItem("expenses")) || [];
+      let editIndex = null;
+      let activeCategory = "Food";
+
+      // Elements
+      const table = document.getElementById("expenseTable");
+      const form = document.getElementById("expenseForm");
+      const tabButtons = document.querySelectorAll(".tab-btn");
+      const dateInput = document.getElementById("date");
+      const amountInput = document.getElementById("amount");
+      const remarkInput = document.getElementById("remark");
+      const monthFilter = document.getElementById("monthFilter");
+      const categoryTotalEl = document.getElementById("categoryTotal");
+      const formBox = document.getElementById("expenseFormBox");
+
+      // Defaults
+      dateInput.value = new Date().toISOString().split("T")[0];
+      monthFilter.value = new Date().toISOString().slice(0, 7);
+
+      // Save
+      function save() {
+        localStorage.setItem("expenses", JSON.stringify(expenses));
+      }
+
+      // Filtered (latest first)
+      function filtered() {
+        return expenses
+          .filter((e) => e.category === activeCategory)
+          .filter(
+            (e) => !monthFilter.value || e.date.startsWith(monthFilter.value),
+          )
+          .sort((a, b) => new Date(b.date) - new Date(a.date));
+      }
+
+      // Render table
+      function renderTable() {
+        table.innerHTML = "";
+        filtered().forEach((e, i) => {
+          table.innerHTML += `
+      <tr class="border-b">
+        <td class="p-2">${e.date}</td>
+        <td class="p-2">Rs ${e.amount}</td>
+        <td class="p-2">${e.remark || "-"}</td>
+        <td class="p-2 space-x-2">
+          <button onclick="edit(${i})">✏️</button>
+          <button onclick="del(${i})">🗑</button>
+        </td>
+      </tr>
+    `;
+        });
+      }
+
+      // Totals
+      function renderCategoryTotal() {
+        const total = filtered().reduce((s, e) => s + e.amount, 0);
+        categoryTotalEl.textContent = `Category Total: Rs ${total}`;
+      }
+
+      function renderMonthTotal() {
+        if (!monthFilter.value) return;
+
+        const [year, month] = monthFilter.value.split("-");
+        const monthName = new Date(year, month - 1).toLocaleString("default", {
+          month: "short",
+        });
+
+        const total = expenses
+          .filter((e) => e.date.startsWith(monthFilter.value))
+          .reduce((s, e) => s + e.amount, 0);
+
+        document.getElementById("monthTotal").textContent =
+          `${monthName} Total: Rs ${total}`;
+      }
+
+      function renderYearTotal() {
+        const year = monthFilter.value.split("-")[0];
+        const total = expenses
+          .filter((e) => e.date.startsWith(year))
+          .reduce((s, e) => s + e.amount, 0);
+
+        document.getElementById("yearTotal").textContent =
+          `Year Total (${year}): Rs ${total}`;
+      }
+
+      // Tabs total
+      function updateTabs() {
+        tabButtons.forEach((btn) => {
+          const cat = btn.dataset.cat;
+          const total = expenses
+            .filter((e) => e.category === cat)
+            .filter(
+              (e) => !monthFilter.value || e.date.startsWith(monthFilter.value),
+            )
+            .reduce((s, e) => s + e.amount, 0);
+
+          btn.innerHTML = `${cat} <span class="text-xs">(Rs ${total})</span>`;
+        });
+      }
+
+      // Render all
+      function render() {
+        renderTable();
+        renderCategoryTotal();
+        renderMonthTotal();
+        renderYearTotal();
+        updateTabs();
+      }
+
+      // Submit
+      form.onsubmit = (e) => {
+        e.preventDefault();
+        const exp = {
+          date: dateInput.value,
+          category: activeCategory,
+          amount: +amountInput.value,
+          remark: remarkInput.value,
+        };
+
+        if (editIndex === null) expenses.push(exp);
+        else expenses[editIndex] = exp;
+
+        editIndex = null;
+        form.reset();
+        dateInput.value = new Date().toISOString().split("T")[0];
+        save();
+        render();
+      };
+
+      // Edit/Delete
+      function edit(i) {
+        const e = filtered()[i];
+        dateInput.value = e.date;
+        amountInput.value = e.amount;
+        remarkInput.value = e.remark || "";
+        editIndex = expenses.indexOf(e);
+
+        // 🔥 Scroll to form on edit
+        formBox.scrollIntoView({ behavior: "smooth", block: "start" });
+        setTimeout(() => amountInput.focus(), 300);
+      }
+
+      function del(i) {
+        const e = filtered()[i];
+        const idx = expenses.indexOf(e);
+        if (confirm("Delete this expense?")) {
+          expenses.splice(idx, 1);
+          save();
+          render();
+        }
+      }
+
+      // Tabs
+      tabButtons.forEach((btn) => {
+        btn.onclick = () => {
+          tabButtons.forEach((b) =>
+            b.classList.remove("bg-blue-600", "text-white"),
+          );
+          tabButtons.forEach((b) =>
+            b.classList.add("bg-gray-200", "dark:bg-gray-700"),
+          );
+          btn.classList.add("bg-blue-600", "text-white");
+          btn.classList.remove("bg-gray-200", "dark:bg-gray-700");
+
+          activeCategory = btn.dataset.cat;
+          editIndex = null;
+          form.reset();
+          dateInput.value = new Date().toISOString().split("T")[0];
+          render();
+        };
+      });
+
+      // Month change
+      monthFilter.onchange = render;
+
+      // Dark toggle
+      function toggleDark() {
+        document.documentElement.classList.toggle("dark");
+        document.getElementById("themeBtn").textContent =
+          document.documentElement.classList.contains("dark")
+            ? "☀️ Light"
+            : "🌙 Dark";
+      }
+
+      // Init
+      render();
+    </script>
+    <script>
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.register("service-worker.js");
+      }
+    </script>
+  </body>
+</html>
