@@ -14,116 +14,61 @@
     <meta name="theme-color" content="#111827" />
     <link rel="apple-touch-icon" href="icon-192.png" />
   </head>
-  <body
-    class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-full p-4"
-  >
+  <body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-full p-4">
     <div class="max-w-7xl mx-auto space-y-6">
       <!-- HEADER -->
       <div class="flex justify-between items-center">
         <h1 class="text-3xl font-bold">💰 Expense Tracker</h1>
-        <button
-          onclick="toggleDark()"
-          id="themeBtn"
-          class="px-3 py-1 rounded bg-yellow-400 text-black"
-        >
+        <button onclick="toggleDark()" id="themeBtn" class="px-3 py-1 rounded bg-yellow-400 text-black">
           ☀️ Light
         </button>
       </div>
+
       <!-- BACKUP BUTTONS -->
       <div class="flex gap-3">
-        <button
-          onclick="exportData()"
-          class="px-3 py-2 bg-green-600 text-white rounded"
-        >
-          ⬇ Export Data
-        </button>
+        <button onclick="exportData()" class="px-3 py-2 bg-green-600 text-white rounded">⬇ Export Data</button>
         <label class="px-3 py-2 bg-blue-600 text-white rounded cursor-pointer">
           ⬆ Import Data
-          <input
-            type="file"
-            id="importFile"
-            hidden
-            accept=".json"
-            onchange="importData(event)"
-          />
+          <input type="file" id="importFile" hidden accept=".json" onchange="importData(event)" />
         </label>
       </div>
+
       <!-- MONTH & YEAR TOTAL -->
       <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow space-y-1">
         <div id="monthTotal" class="text-xl font-bold">Month Total: Rs 0</div>
-        <div id="yearTotal" class="text-md text-gray-600 dark:text-gray-300">
-          Year Total: Rs 0
-        </div>
+        <div id="yearTotal" class="text-md text-gray-600 dark:text-gray-300">Year Total: Rs 0</div>
       </div>
+
       <!-- CATEGORY TABS -->
       <div class="flex space-x-2 overflow-x-auto border-b pb-1">
-        <button
-          class="tab-btn px-4 py-2 bg-blue-600 text-white rounded-t"
-          data-cat="Food"
-        ></button>
-        <button
-          class="tab-btn px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded-t"
-          data-cat="Transport"
-        ></button>
-        <button
-          class="tab-btn px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded-t"
-          data-cat="Shopping"
-        ></button>
-        <button
-          class="tab-btn px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded-t"
-          data-cat="Rent"
-        ></button>
-        <button
-          class="tab-btn px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded-t"
-          data-cat="Entertainment"
-        ></button>
-        <button
-          class="tab-btn px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded-t"
-          data-cat="Other"
-        ></button>
+        <button class="tab-btn px-4 py-2 rounded-t" data-cat="Food">Food</button>
+        <button class="tab-btn px-4 py-2 rounded-t" data-cat="Transport">Transport</button>
+        <button class="tab-btn px-4 py-2 rounded-t" data-cat="Shopping">Shopping</button>
+        <button class="tab-btn px-4 py-2 rounded-t" data-cat="Rent">Rent</button>
+        <button class="tab-btn px-4 py-2 rounded-t" data-cat="Entertainment">Entertainment</button>
+        <button class="tab-btn px-4 py-2 rounded-t" data-cat="Other">Other</button>
       </div>
+
       <!-- FILTER -->
       <div>
         <label class="font-medium">
           Filter by Month:
-          <input
-            type="month"
-            id="monthFilter"
-            class="p-2 rounded border dark:bg-gray-800 ml-2"
-          />
+          <input type="month" id="monthFilter" class="p-2 rounded border dark:bg-gray-800 ml-2"/>
         </label>
       </div>
+
       <!-- FORM -->
-      <div
-        id="expenseFormBox"
-        class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow"
-      >
+      <div id="expenseFormBox" class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow">
         <form id="expenseForm" class="grid grid-cols-1 md:grid-cols-4 gap-3">
-          <input
-            type="date"
-            id="date"
-            required
-            class="p-2 rounded border dark:bg-gray-700"
-          />
-          <input
-            type="number"
-            id="amount"
-            placeholder="Amount (Rs)"
-            required
-            class="p-2 rounded border dark:bg-gray-700"
-          />
-          <input
-            type="text"
-            id="remark"
-            placeholder="Remark"
-            class="p-2 rounded border dark:bg-gray-700"
-          />
+          <input type="date" id="date" required class="p-2 rounded border dark:bg-gray-700"/>
+          <input type="number" id="amount" placeholder="Amount (Rs)" required class="p-2 rounded border dark:bg-gray-700"/>
+          <input type="text" id="remark" placeholder="Remark" class="p-2 rounded border dark:bg-gray-700"/>
           <button class="bg-blue-600 text-white rounded p-2">Save</button>
         </form>
       </div>
-      <div id="categoryTotal" class="text-lg font-semibold">
-        Category Total: Rs 0
-      </div>
+
+      <div id="categoryTotal" class="text-lg font-semibold">Category Total: Rs 0</div>
+
       <!-- TABLE -->
       <div class="bg-white dark:bg-gray-800 rounded-xl shadow overflow-x-auto">
         <table class="w-full text-sm">
@@ -139,10 +84,13 @@
         </table>
       </div>
     </div>
+
     <script>
+      // ====== VARIABLES ======
       let expenses = JSON.parse(localStorage.getItem("expenses")) || [];
       let editIndex = null;
       let activeCategory = "Food";
+
       const table = document.getElementById("expenseTable");
       const form = document.getElementById("expenseForm");
       const tabButtons = document.querySelectorAll(".tab-btn");
@@ -152,75 +100,83 @@
       const monthFilter = document.getElementById("monthFilter");
       const categoryTotalEl = document.getElementById("categoryTotal");
       const formBox = document.getElementById("expenseFormBox");
+      const monthTotal = document.getElementById("monthTotal");
+      const yearTotal = document.getElementById("yearTotal");
       dateInput.value = new Date().toISOString().split("T")[0];
-      monthFilter.value = new Date().toISOString().slice(0, 7);
+      monthFilter.value = new Date().toISOString().slice(0,7);
 
+      // ====== LOCAL STORAGE ======
       function save() {
         localStorage.setItem("expenses", JSON.stringify(expenses));
       }
 
+      // ====== FILTER & SORT ======
       function filtered() {
         return expenses
-          .filter((e) => e.category === activeCategory)
-          .filter(
-            (e) => !monthFilter.value || e.date.startsWith(monthFilter.value),
-          )
-          .sort((a, b) => new Date(b.date) - new Date(a.date));
+          .filter(e => e.category === activeCategory)
+          .filter(e => !monthFilter.value || e.date.startsWith(monthFilter.value))
+          .sort((a,b)=> new Date(b.date)-new Date(a.date));
       }
 
+      // ====== RENDER ======
       function renderTable() {
         table.innerHTML = "";
-        filtered().forEach((e, i) => {
+        filtered().forEach((e,i)=>{
           table.innerHTML += `
-
-											<tr class="border-b">
-												<td class="p-2">${e.date}</td>
-												<td class="p-2">Rs ${e.amount}</td>
-												<td class="p-2">${e.remark || "-"}</td>
-												<td class="p-2">
-													<button onclick="edit(${i})">✏️</button>
-													<button onclick="del(${i})">🗑</button>
-												</td>
-											</tr>`;
+            <tr class="border-b">
+              <td class="p-2">${e.date}</td>
+              <td class="p-2">Rs ${e.amount}</td>
+              <td class="p-2">${e.remark || "-"}</td>
+              <td class="p-2">
+                <button onclick="edit(${i})">✏️</button>
+                <button onclick="del(${i})">🗑</button>
+              </td>
+            </tr>
+          `;
         });
       }
 
       function renderCategoryTotal() {
-        const t = filtered().reduce((s, e) => s + e.amount, 0);
+        const t = filtered().reduce((s,e)=>s+e.amount,0);
         categoryTotalEl.textContent = `Category Total: Rs ${t}`;
       }
 
       function renderMonthTotal() {
-        if (!monthFilter.value) return;
-        const [y, m] = monthFilter.value.split("-");
-        const name = new Date(y, m - 1).toLocaleString("default", {
-          month: "short",
-        });
-        const t = expenses
-          .filter((e) => e.date.startsWith(monthFilter.value))
-          .reduce((s, e) => s + e.amount, 0);
+        if(!monthFilter.value) return;
+        const [y,m] = monthFilter.value.split("-");
+        const name = new Date(y, m-1).toLocaleString("default",{month:"short"});
+        const t = expenses.filter(e=>e.date.startsWith(monthFilter.value))
+                          .reduce((s,e)=>s+e.amount,0);
         monthTotal.textContent = `${name} Total: Rs ${t}`;
       }
 
       function renderYearTotal() {
         const y = monthFilter.value.split("-")[0];
-        const t = expenses
-          .filter((e) => e.date.startsWith(y))
-          .reduce((s, e) => s + e.amount, 0);
+        const t = expenses.filter(e=>e.date.startsWith(y))
+                          .reduce((s,e)=>s+e.amount,0);
         yearTotal.textContent = `Year Total (${y}): Rs ${t}`;
       }
 
       function updateTabs() {
-        tabButtons.forEach((btn) => {
+        tabButtons.forEach(btn=>{
           const cat = btn.dataset.cat;
-          const t = expenses
-            .filter((e) => e.category === cat)
-            .filter(
-              (e) => !monthFilter.value || e.date.startsWith(monthFilter.value),
-            )
-            .reduce((s, e) => s + e.amount, 0);
-          btn.innerHTML = `${cat} 
-											<span class="text-xs">(Rs ${t})</span>`;
+          const t = expenses.filter(e=>e.category===cat)
+                            .filter(e=>!monthFilter.value || e.date.startsWith(monthFilter.value))
+                            .reduce((s,e)=>s+e.amount,0);
+          btn.innerHTML = `${cat} <span class="text-xs">(Rs ${t})</span>`;
+        });
+      }
+
+      function updateTabClasses() {
+        tabButtons.forEach(btn=>{
+          const cat = btn.dataset.cat;
+          if(cat===activeCategory){
+            btn.classList.add("bg-blue-600","text-white");
+            btn.classList.remove("bg-gray-200","dark:bg-gray-700");
+          } else {
+            btn.classList.remove("bg-blue-600","text-white");
+            btn.classList.add("bg-gray-200","dark:bg-gray-700");
+          }
         });
       }
 
@@ -230,16 +186,19 @@
         renderMonthTotal();
         renderYearTotal();
         updateTabs();
+        updateTabClasses();
       }
-      form.onsubmit = (e) => {
+
+      // ====== FORM SUBMIT ======
+      form.onsubmit = e=>{
         e.preventDefault();
         const exp = {
           date: dateInput.value,
           category: activeCategory,
           amount: +amountInput.value,
-          remark: remarkInput.value,
+          remark: remarkInput.value
         };
-        if (editIndex === null) expenses.push(exp);
+        if(editIndex===null) expenses.push(exp);
         else expenses[editIndex] = exp;
         editIndex = null;
         form.reset();
@@ -248,71 +207,70 @@
         render();
       };
 
-      function edit(i) {
+      // ====== EDIT / DELETE ======
+      function edit(i){
         const e = filtered()[i];
         dateInput.value = e.date;
         amountInput.value = e.amount;
         remarkInput.value = e.remark || "";
         editIndex = expenses.indexOf(e);
-        formBox.scrollIntoView({
-          behavior: "smooth",
-        });
+        formBox.scrollIntoView({behavior:"smooth"});
       }
 
-      function del(i) {
+      function del(i){
         const e = filtered()[i];
         const idx = expenses.indexOf(e);
-        if (confirm("Delete this expense?")) {
-          expenses.splice(idx, 1);
+        if(confirm("Delete this expense?")){
+          expenses.splice(idx,1);
           save();
           render();
         }
       }
-      tabButtons.forEach((btn) => {
-        btn.onclick = () => {
-          tabButtons.forEach((b) =>
-            b.classList.remove("bg-blue-600", "text-white"),
-          );
-          btn.classList.add("bg-blue-600", "text-white");
+
+      // ====== TAB BUTTONS ======
+      tabButtons.forEach(btn=>{
+        btn.onclick = ()=>{
           activeCategory = btn.dataset.cat;
+          updateTabClasses();
           render();
-        };
+        }
       });
+
+      // ====== FILTER ======
       monthFilter.onchange = render;
 
-      function toggleDark() {
+      // ====== DARK MODE ======
+      function toggleDark(){
         document.documentElement.classList.toggle("dark");
-        themeBtn.textContent = document.documentElement.classList.contains(
-          "dark",
-        )
-          ? "☀️ Light"
-          : "🌙 Dark";
+        themeBtn.textContent = document.documentElement.classList.contains("dark") ? "☀️ Light" : "🌙 Dark";
       }
-      /* ✅ EXPORT */
-      function exportData() {
-        const data = localStorage.getItem("expenses") || "[]";
-        const blob = new Blob([data], {
-          type: "application/json",
-        });
+
+      // ====== EXPORT / IMPORT ======
+      function exportData(){
+        const data = localStorage.getItem("expenses")||"[]";
+        const blob = new Blob([data],{type:"application/json"});
         const a = document.createElement("a");
         a.href = URL.createObjectURL(blob);
         a.download = "expenses-backup.json";
         a.click();
       }
-      /* ✅ IMPORT */
-      function importData(e) {
+
+      function importData(e){
         const file = e.target.files[0];
         const reader = new FileReader();
-        reader.onload = (x) => {
-          localStorage.setItem("expenses", x.target.result);
+        reader.onload = x=>{
+          localStorage.setItem("expenses",x.target.result);
           location.reload();
         };
         reader.readAsText(file);
       }
+
+      // ====== INIT ======
       render();
+
       /* PWA */
-      if ("serviceWorker" in navigator) {
-        navigator.serviceWorker.register("service-worker.js");
+      if("serviceWorker" in navigator){
+        navigator.serviceWorker.register("service-worker.js").then(reg=>reg.update());
       }
     </script>
   </body>
